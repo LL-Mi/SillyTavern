@@ -1,0 +1,42 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Write Assistant's next reply in a fictional chat between Assistant and 1."
+    },
+    {
+      "role": "system",
+      "content": "[Start a new Chat]"
+    },
+    {
+      "role": "user",
+      "content": "你好"
+    }
+  ],
+  "model": "gemini-2.0-flash",
+  "temperature": 1,
+  "frequency_penalty": 0,
+  "presence_penalty": 0,
+  "top_p": 1,
+  "max_tokens": 300,
+  "stream": true,
+  "chat_completion_source": "makersuite",
+  "user_name": "1",
+  "char_name": "Assistant",
+  "group_names": [],
+  "include_reasoning": true,
+  "reasoning_effort": "auto",
+  "enable_web_search": false,
+  "request_images": false,
+  "custom_prompt_post_processing": "",
+  "top_k": 0,
+  "stop": [],
+  "use_makersuite_sysprompt": true
+}
+
+
+data: {"candidates": [{"content": {"parts": [{"text": "你好"}],"role": "model"}}],"usageMetadata": {"promptTokenCount": 24,"totalTokenCount": 24,"promptTokensDetails": [{"modality": "TEXT","tokenCount": 24}]},"modelVersion": "gemini-2.0-flash","responseId": "iviBaIm0C8-p1dkPkbbPgAw"}
+
+data: {"candidates": [{"content": {"parts": [{"text": "！很高兴为您服务。有什么我可以帮您吗？\n"}],"role": "model"},"finishReason": "STOP"}],"usageMetadata": {"promptTokenCount": 23,"candidatesTokenCount": 14,"totalTokenCount": 37,"promptTokensDetails": [{"modality": "TEXT","tokenCount": 23}],"candidatesTokensDetails": [{"modality": "TEXT","tokenCount": 14}]},"modelVersion": "gemini-2.0-flash","responseId": "iviBaIm0C8-p1dkPkbbPgAw"}
+
+
