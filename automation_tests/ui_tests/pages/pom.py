@@ -110,30 +110,74 @@ class AdminPage(BasePage):
         self.confirm_password_field = (By.CSS_SELECTOR, 'input.createUserConfirmPassword')
         self.submit_button = (By.CSS_SELECTOR, 'button.newUserRegisterFinalizeButton')
 
-        self.popup_ok_button = (By.CSS_SELECTOR, 'button.popup-button-ok')
-        self.cancel_button = (By.CSS_SELECTOR, 'button.popup-button-cancel')
+        self.popup_ok_button = (By.CSS_SELECTOR, 'div.popup-button-ok')
+        self.popup_cancel_button = (By.CSS_SELECTOR, 'div.popup-button-cancel')
 
         self.manager_user_button = (By.CSS_SELECTOR, 'button.manageUsersButton')
-        self.user_account_card  = (By.CSS_SELECTOR, 'div.userAccount')
+        self.user_cards_in_list = (By.CSS_SELECTOR, 'div.usersList div.userAccount')
         self.user_name_in_card  = (By.CSS_SELECTOR, 'h3.userName')
-        self.user_delete_button_in_card  = (By.CSS_SELECTOR, 'button.userDelete')
+        self.user_delete_button_in_card  = (By.CSS_SELECTOR, 'div.userDelete')
 
         self.delete_user_name_input=(By.ID,'deleteUserHandle')
         self.delete_user_date=(By.ID,'deleteUserData')
 
         self.logout_button = (By.ID, 'logout_button')
 
+    def is_user_in_list(self, username: str) -> bool:
+        try:
+            time.sleep(1)
+            user_cards = self.driver.find_elements(*self.user_cards_in_list)
+            for card in user_cards:
+                name_element = card.find_element(*self.user_name_in_card)
+                if name_element.text == username:
+                    print(f"成功找到用户: {username}")
+                    return True
+
+            print(f"未在列表中找到用户: {username}")
+            return False
+
+        except Exception as e:
+            print(f"查找用户 '{username}' 过程中发生错误: {e}")
+            return False
+
+
     def logout(self):
         self._wait_for_clickable(self.logout_button).click()
 
     def click_manager_setting_page_button(self):
+        try:
+            header = self.driver.find_elements(*self.header_text)
+
+            if len(header) > 0 and header[0].is_displayed():
+                print("用户设置面板已经打开，无需点击。")
+                return
+        except Exception:
+            # 即使查找出错，也继续执行点击逻辑
+            pass
+
+        print("用户设置面板未打开，正在点击按钮...")
         self._wait_for_clickable(self.user_setting_page_button).click()
-        self._wait_for_visibility(self.header_text)
+
+        try:
+            self._wait_for_visibility(self.header_text, timeout=5)
+            print("成功打开用户设置面板。")
+        except TimeoutException:
+            raise Exception("点击用户设置按钮后，面板未能成功打开。")
 
     def click_admin_button(self):
         self._wait_for_clickable(self.admin_button).click()
         self._wait_for_visibility(self.new_user_button)
         self._wait_for_visibility(self.manager_user_button)
+
+    def click_manager_user_button(self):
+        self._wait_for_clickable(self.manager_user_button).click()
+
+    def navigate_to_users_list(self):
+        """导航到用户管理列表。"""
+        self.click_manager_setting_page_button()
+        self.click_admin_button()
+        self.click_manager_user_button()
+        self._wait_for_visibility(self.user_cards_in_list)
 
     def click_new_user_button(self):
         self._wait_for_clickable(self.new_user_button).click()
@@ -153,22 +197,23 @@ class AdminPage(BasePage):
         self._wait_for_clickable(self.submit_button).click()
         self._wait_for_presence(self.manager_user_button)
 
+    def click_popup_ok(self):
+        self._wait_for_clickable(self.popup_ok_button).click()
+        self._wait_for_visibility(self.admin_button)
+
     def create_new_user(self, username, password):
-        self.click_manager_setting_page_button()
-        self.click_admin_button()
+        self.navigate_to_users_list()
         self.click_new_user_button()
         self.input_username(username)
         self.input_password(password)
         self.input_confirm_password(password)
         self.click_submit()
 
-    def click_delete_button_for_user(self, username):
-        self.click_manager_setting_page_button()
-        self.click_admin_button()
-        self._wait_for_clickable(self.manager_user_button).click()
 
-        self._wait_for_visibility(self.user_account_card)
-        user_cards=self.driver.find_elements(*self.user_account_card)
+    def click_delete_button_for_user(self, username):
+        self._wait_for_visibility(self.user_cards_in_list)
+        time.sleep(0.5)
+        user_cards=self.driver.find_elements(*self.user_cards_in_list)
 
         found = False
         for card in user_cards:
@@ -189,16 +234,19 @@ class AdminPage(BasePage):
 
     def confirm_delete_user(self, username):
         self._wait_for_presence(self.delete_user_name_input).send_keys(username)
+        ok_button = self._wait_for_clickable(self.popup_ok_button)
+        self.driver.execute_script("arguments[0].click();", ok_button)
 
     def click_delete_date(self):
         self._wait_for_presence(self.delete_user_date).click()
 
-    def confirm_delete(self,username):
+    def delete_user(self, username):
+        self.navigate_to_users_list()
         self.click_delete_button_for_user(username)
         self.click_delete_date()
         self.confirm_delete_user(username)
-        self._wait_for_clickable(self.popup_ok_button).click()
-        self._wait_for_presence(self.manager_user_button)
+
+
 
 
 class MessagePage(BasePage):
